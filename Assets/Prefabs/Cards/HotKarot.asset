@@ -12,9 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9120fe75e961a7b479baebed20b5e8f9, type: 3}
   m_Name: HotKarot
   m_EditorClassIdentifier: 
-  data:
-    title: Hot Karot
-    power: 1
-    artwork: {fileID: 1817450760, guid: 960cd433a789ba149bdd61f92eb3e274, type: 3}
-    strength: 1
-    hp: 2
+  cardName: Hot Karot
+  power: 1
+  artwork: {fileID: 1817450760, guid: 960cd433a789ba149bdd61f92eb3e274, type: 3}
+  strength: 1
+  hp: 1

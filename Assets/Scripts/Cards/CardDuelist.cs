@@ -4,29 +4,50 @@ using UnityEngine;
 
 public class CardDuelist : MonoBehaviour
 {
-    public ScriptableCard[] cards;
+    [SerializeField] ScriptableTGCCard card0;
+    [SerializeField] ScriptableTGCCard card1;
+    [SerializeField] ScriptableTGCCard card2;
+    [SerializeField] ScriptableTGCCard card3;
+
+    public List<ScriptableTGCCard> Cards
+    {
+        get
+        {
+            List<ScriptableTGCCard> cards = new();
+            if (card0 != null)
+                cards.Add(card0);
+            if (card1 != null)
+                cards.Add(card1);
+            if (card2 != null)
+                cards.Add(card2);
+            if (card3 != null)
+                cards.Add(card3);
+            return cards;
+        }
+    }
     public const int MAX_TEAM_SIZE = 4;
 }
 
 [System.Serializable]
 public class CardBattleTeam
 {
-    public CardBattleTeam(ScriptableCard[] cards)
+    public CardBattleTeam(ScriptableTGCCard[] cards)
     {
+        teamCards = new();
         for (int i = 0; i < cards.Length; i++)
         {
-            AddCardToTeam(cards[i].data);
+            AddCardToTeam(cards[i].CardData);
         }
     }
 
     void AddCardToTeam(CardData data)
     {
-        teamCards.Add(new CardBattle(this,data));
+        teamCards.Add(new CardBattle(this, data));
     }
 
     public CardBattle GetFirstCard()
     {
-       return teamCards.First(c => c.IsAlive);
+        return teamCards.First(c => c.IsAlive);
     }
 
     public int AliveCardCount
@@ -43,18 +64,16 @@ public class CardBattleTeam
         }
     }
 
-    public bool HasCardAlive=>AliveCardCount> 0;
+    public bool HasCardAlive => AliveCardCount > 0;
 
     public List<CardBattle> teamCards;
 }
 
 public class CardBattle
 {
-    public CardBattle(CardBattleTeam team,CardData data)
+    public CardBattle(CardBattleTeam team, CardData data)
     {
         this.data = data;
-        currentStrength = data.strength;
-        currentHP = data.hp;
         this.team = team;
         power = data.power.GetPowerObjectFor(this);
         isDead = false;
@@ -64,23 +83,21 @@ public class CardBattle
     public CardPowerBase power;
 
     public CardData data;
-    public int currentHP;
-    public int currentStrength;
     public int hitReceived;
     public bool isDead;
 
-    public bool IsAlive =>!isDead;
+    public bool IsAlive => !isDead;
 
     public void Damage(int amount)
     {
         if (isDead)
             return;
 
-        currentHP -= amount;
+        data.hp -= amount;
         hitReceived++;
 
-        if (currentHP < 0)
-            Die(); 
+        if (data.hp <= 0)
+            Die();
     }
 
     public void Die()
@@ -91,7 +108,7 @@ public class CardBattle
 
     public void AttackCard(CardBattle other)
     {
-        other.Damage(currentStrength);
+        other.Damage(data.strength);
     }
 
     public bool IsSameTeam(CardBattleTeam other) => other == team;

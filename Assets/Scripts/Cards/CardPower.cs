@@ -1,7 +1,8 @@
 using System;
 using UnityEngine;
 
-public enum CardPower {
+public enum CardPower
+{
     None,
     DamageAroundOnAttack,
 }
@@ -23,8 +24,8 @@ public static class CardPowerDatabase
 
     public static string ApplyTextEffects(string str)
     {
-       str= str.Replace("[", "<i><b><smallcaps>");
-       str = str.Replace("]", "</i></b></smallcaps>");
+        str = str.Replace("[", "<i><b><smallcaps>");
+        str = str.Replace("]", "</i></b></smallcaps>");
         return str;
     }
 
@@ -74,7 +75,11 @@ public class CardPowerDamageAroundOnAttack : CardPowerBase
     public override void PostAttack(CardBattle target)
     {
         CardDuelManager.Instance.GetAdjacentCards(owner, out CardBattle left, out CardBattle right);
-        left.Damage(1);
-        right.Damage(1);
+        if (left != null)
+            left.Damage(1);
+        if (right != null)
+            right.Damage(1);
+
+        CardDuelManager.Instance.UpdateDisplay();
     }
 }

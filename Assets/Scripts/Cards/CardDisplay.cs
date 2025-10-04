@@ -4,8 +4,6 @@ using UnityEngine.UI;
 
 public class CardDisplay : MonoBehaviour
 {
-    public ScriptableCard card;
-
     [Header("Info")]
     [SerializeField] TextMeshProUGUI title;
     [SerializeField] TextMeshProUGUI description;
@@ -15,19 +13,20 @@ public class CardDisplay : MonoBehaviour
     [SerializeField] TextMeshProUGUI strength;
     [SerializeField] TextMeshProUGUI hp;
 
-    private void Start()
-    {
-        Display(in card.data);
-    }
-
     public void Display(in CardData data)
     {
-        title.text = data.title;
+        gameObject.SetActive(true);
+        title.text = data.cardName;
         description.text = data.power.GetDescrition();
 
         strength.text = data.strength.ToString();
         hp.text = data.hp.ToString();
 
         artworkImage.sprite = data.artwork;
+    }
+
+    public void Hide()
+    {
+        gameObject.SetActive(false);
     }
 }

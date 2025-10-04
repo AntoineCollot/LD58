@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -11,6 +12,13 @@ public class CardDuelManager : MonoBehaviour
 
     List<CardBattle> dyingCards = new();
 
+    [Header("Display")]
+    [SerializeField] CardDisplay[] cardDisplays;
+    const float TURN_ACTION_DURATION = 0.2f;
+
+    //player
+    CompositeStateToken freezePlayerToken;
+
     private void Awake()
     {
         Instance = this;
@@ -18,7 +26,10 @@ public class CardDuelManager : MonoBehaviour
 
     void Start()
     {
+        freezePlayerToken = new();
+        PlayerState.Instance.freezeInputState.Add(freezePlayerToken);
 
+        HideCards();
     }
 
     // Update is called once per frame
@@ -27,19 +38,37 @@ public class CardDuelManager : MonoBehaviour
 
     }
 
+    void HideCards()
+    {
+        foreach (CardDisplay display in cardDisplays)
+        {
+            display.Hide();
+        }
+    }
+
+    #region Duel
     public void StartDuel(CardDuelist player, CardDuelist opponent)
     {
-        StartDuel(new CardBattleTeam(player.cards), new CardBattleTeam(opponent.cards));
+        StartDuel(new CardBattleTeam(player.Cards.ToArray()), new CardBattleTeam(opponent.Cards.ToArray()));
     }
 
     public void StartDuel(CardBattleTeam player, CardBattleTeam opponent)
     {
+        StartCoroutine(Duel(player, opponent));
+    }
+
+    IEnumerator Duel(CardBattleTeam player, CardBattleTeam opponent)
+    {
+        freezePlayerToken.SetOn(true);
+
         int turns = 0;
         const int MAX_TURNS = 30;
         bool victory = false;
 
         leftTeam = player;
         rightTeam = opponent;
+
+        UpdateDisplay();
 
         while (turns < MAX_TURNS)
         {
@@ -50,17 +79,24 @@ public class CardDuelManager : MonoBehaviour
             }
 
             //Oppnent turn
-            PlayTurn(opponent, player);
+            yield return StartCoroutine(PlayTurn(opponent, player));
 
             if (!player.HasCardAlive)
                 break;
 
             //player turn
-            PlayTurn(player, opponent);
+            yield return StartCoroutine(PlayTurn(player, opponent));
         }
+
+        Debug.Log("Duel finished! Victory: " + victory);
+        freezePlayerToken.SetOn(false);
+
+        yield return new WaitForSeconds(1);
+
+        HideCards();
     }
 
-    void PlayTurn(CardBattleTeam team, CardBattleTeam other)
+    IEnumerator PlayTurn(CardBattleTeam team, CardBattleTeam other)
     {
         CardBattle playingCard = team.GetFirstCard();
         CardBattle targetCard = other.GetFirstCard();
@@ -69,7 +105,7 @@ public class CardDuelManager : MonoBehaviour
         playingCard.power?.PreAttack(targetCard);
         targetCard.power?.PreReceiveAttack(playingCard);
 
-        var cards = GetAllCards();
+        var cards = GetAllCardsInDisplayOrder();
         for (int i = 0; i < cards.Count; i++)
         {
             cards[i].power?.PreAnyAttack(playingCard, targetCard);
@@ -77,6 +113,9 @@ public class CardDuelManager : MonoBehaviour
 
         //First card of the playing team attacks the first of opposite team
         playingCard.AttackCard(targetCard);
+        UpdateDisplay();
+
+        yield return new WaitForSeconds(TURN_ACTION_DURATION);
 
         //Pre callbacks
         playingCard.power?.PostAttack(targetCard);
@@ -87,23 +126,26 @@ public class CardDuelManager : MonoBehaviour
             cards[i].power?.PostAnyAttack(playingCard, targetCard);
         }
 
-        while(ProcessDeadCards())
+        while (ProcessDeadCards())
         {
             //Process all dead cards until there is none left
+            yield return new WaitForSeconds(TURN_ACTION_DURATION);
         }
     }
 
-    public List<CardBattle> GetAllCards()
+    public List<CardBattle> GetAllCardsInDisplayOrder()
     {
         List<CardBattle> cards = new();
         cards.AddRange(leftTeam.teamCards);
+        //Reverse the left team to have them in disply order
+        cards.Reverse();
         cards.AddRange(rightTeam.teamCards);
         return cards;
     }
 
     public void GetAdjacentCards(CardBattle source, out CardBattle left, out CardBattle right)
     {
-        List<CardBattle> cards = GetAllCards();
+        List<CardBattle> cards = GetAllCardsInDisplayOrder();
 
         left = null;
         right = null;
@@ -144,7 +186,7 @@ public class CardDuelManager : MonoBehaviour
 
         foreach (CardBattle deadCard in dyingCards)
         {
-            var cards = GetAllCards();
+            var cards = GetAllCardsInDisplayOrder();
             for (int i = 0; i < cards.Count; i++)
             {
                 cards[i].power?.PostCardDie(deadCard);
@@ -154,4 +196,29 @@ public class CardDuelManager : MonoBehaviour
         dyingCards.Clear();
         return true;
     }
+    #endregion
+
+    #region Display
+    public void UpdateDisplay()
+    {
+        HideCards();
+
+        //Left team starts at 3 id and goes down
+        int displayID = 3;
+        //Foreach left team
+        foreach (CardBattle card in leftTeam.teamCards)
+        {
+            cardDisplays[displayID].Display(card.data);
+            displayID--;
+        }
+
+        //Right Team
+        displayID = 4;
+        foreach (CardBattle card in rightTeam.teamCards)
+        {
+            cardDisplays[displayID].Display(card.data);
+            displayID++;
+        }
+    }
+    #endregion
 }
