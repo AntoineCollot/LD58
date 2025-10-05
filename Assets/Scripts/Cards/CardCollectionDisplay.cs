@@ -46,7 +46,7 @@ public class CardCollectionDisplay : MonoBehaviour
         lookDirection.enabled = !areCardInteractive || !IsVisible;
     }
 
-    private void OnCollectionUpdated()
+    private void OnCollectionUpdated(ScriptableTGCCard card, PlayerCardCollection.UpdateType update)
     {
         UpdateDisplay();
     }

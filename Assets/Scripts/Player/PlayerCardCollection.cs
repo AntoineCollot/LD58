@@ -10,7 +10,8 @@ public static class PlayerCardCollection
 
     public static Dictionary<ScriptableTGCCard, int> collection;
 
-    public static event Action onCollectionUpdated;
+    public enum UpdateType { Added, Removed, Mixed}
+    public static event Action<ScriptableTGCCard,UpdateType> onCollectionUpdated;
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
     static void Init()
@@ -29,7 +30,7 @@ public static class PlayerCardCollection
             collection.Add(card, 1);
         }
 
-        onCollectionUpdated?.Invoke();
+        onCollectionUpdated?.Invoke(card,UpdateType.Added);
     }
 
     public static bool TryRemoveCard(ScriptableTGCCard card)
@@ -41,7 +42,7 @@ public static class PlayerCardCollection
             return false;
 
         collection[card]--;
-        onCollectionUpdated?.Invoke();
+        onCollectionUpdated?.Invoke(card,UpdateType.Removed);
 
         return true;
     }
