@@ -10,10 +10,11 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 9120fe75e961a7b479baebed20b5e8f9, type: 3}
-  m_Name: LeakLeek
+  m_Name: Brolon
   m_EditorClassIdentifier: 
-  cardName: Leak Leek
-  artwork: {fileID: -1485828185, guid: 960cd433a789ba149bdd61f92eb3e274, type: 3}
-  power: 0
+  cardName: Brolon
+  artwork: {fileID: 2079625059, guid: 960cd433a789ba149bdd61f92eb3e274, type: 3}
+  isRare: 1
+  power: 9
   strength: 1
-  hp: 2
+  hp: 4

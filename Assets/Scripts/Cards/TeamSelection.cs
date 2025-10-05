@@ -12,13 +12,22 @@ public class TeamSelection : MonoBehaviour
     [SerializeField] GameObject[] toEnableDuringTeamSelection;
     CardDuelist duelist;
 
-    bool isInTeamSelection;
+    public bool isInTeamSelection { get; private set; }
     public bool isVisible => panel.activeSelf;
     List<ScriptableTGCCard> selectedCards;
+
+    public static int playerTeamSize { get; private set; }
 
     private void Awake()
     {
         duelist = GetComponentInParent<CardDuelist>(true);
+        playerTeamSize = 0;
+    }
+
+    private void OnEnable()
+    {
+        if (NPCBet.isInAnyBetSelect && isVisible)
+            Hide();
     }
 
     void Start()
@@ -29,6 +38,11 @@ public class TeamSelection : MonoBehaviour
         EnableShowObjects(false);
 
         UpdateDisplay();
+        Hide();
+    }
+
+    private void OnDisable()
+    {
         Hide();
     }
 
@@ -56,7 +70,8 @@ public class TeamSelection : MonoBehaviour
     public void Hide(bool doNotResetCardInteractivity = false)
     {
         EndTeamSelection(doNotResetCardInteractivity);
-        panel.SetActive(false);
+        if (panel != null)
+            panel.SetActive(false);
     }
 
     private void OnShowPanelButton()
@@ -71,14 +86,14 @@ public class TeamSelection : MonoBehaviour
     {
         if (isInTeamSelection)
             EndTeamSelection();
-        else if(!NPCBet.isInAnyBetSelect)
+        else if (!NPCBet.isInAnyBetSelect)
             EnterTeamSelection();
     }
 
     void Update()
     {
-        if (isInTeamSelection && NPCBet.isInAnyBetSelect)
-        { 
+        if (isVisible && NPCBet.isInAnyBetSelect)
+        {
             Hide(true);
         }
         //Stop if we leave the collection
@@ -87,12 +102,15 @@ public class TeamSelection : MonoBehaviour
             EndTeamSelection();
             Hide();
         }
+
+        showPanelButton.gameObject.SetActive(!NPCBet.isInAnyBetSelect);
     }
 
     void EnterTeamSelection()
     {
         isInTeamSelection = true;
-        duelist.ClearCards();
+        if (duelist != null)
+            duelist.ClearCards();
 
         CardDisplay.onAnyCardClick -= OnAnyCardClick;
         CardDisplay.onAnyCardClick += OnAnyCardClick;
@@ -126,6 +144,7 @@ public class TeamSelection : MonoBehaviour
 
         selectedCards.Add(card);
         duelist.SetCards(selectedCards);
+        playerTeamSize = selectedCards.Count;
         UpdateDisplay();
 
         if (selectedCards.Count >= CardDuelist.MAX_TEAM_SIZE)
@@ -140,7 +159,7 @@ public class TeamSelection : MonoBehaviour
     void UpdateDisplay()
     {
         HideAllDisplays();
-        List<ScriptableTGCCard> duelistTeam = duelist.Cards;
+        List<ScriptableTGCCard> duelistTeam = duelist.CardsAsPlayer;
         for (int i = 0; i < Mathf.Min(duelistTeam.Count, teamDisplays.Length); i++)
         {
             teamDisplays[i].Display(duelistTeam[i]);

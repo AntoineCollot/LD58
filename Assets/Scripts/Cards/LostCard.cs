@@ -4,11 +4,14 @@ public class LostCard : MonoBehaviour
 {
     [SerializeField] ScriptableTGCCard card;
     [SerializeField] WorldUIButton pickUpButton;
+    public bool hasBeenPickedUp { get; private set; }
 
     void Start()
     {
         pickUpButton.onClick += OnPickUpButton;
-        GetComponentInChildren<CardDisplay>(true).Display(card);
+        CardDisplay display = GetComponentInChildren<CardDisplay>(true);
+        if(display!=null)
+            display.Display(card);
     }
 
     void OnDestroy()
@@ -29,5 +32,8 @@ public class LostCard : MonoBehaviour
     {
         PlayerCardCollection.AddCard(card);
         gameObject.SetActive(false);
+        hasBeenPickedUp = true;
+
+        SFXManager.PlaySound(GlobalSFX.PickUpCard);
     }
 }

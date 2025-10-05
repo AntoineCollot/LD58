@@ -17,11 +17,17 @@ public class NPCBet : MonoBehaviour, INPCSelectable
     [SerializeField] CardDisplay playerBetCardDisplay;
     [SerializeField] WorldUIButton betButton;
 
-    bool CanBet => playerBetCard != null;
+    float nextAvailableTime;
+    const float CAN_BET_AGAIN_TIME = 60;
+    bool IsInteractive => Time.time > nextAvailableTime;
+
+    bool CanBet => playerBetCard != null && TeamSelection.playerTeamSize >0;
 
     void Start()
     {
         betButton.onClick += OnBetButton;
+        panel.SetActive(false);
+        isInAnyBetSelect = false;
     }
 
     private void OnDestroy()
@@ -39,7 +45,7 @@ public class NPCBet : MonoBehaviour, INPCSelectable
 
     public void ShowBet()
     {
-        if (hasPerformedBet)
+        if (!IsInteractive)
             return;
 
         panel.SetActive(true);
@@ -67,6 +73,7 @@ public class NPCBet : MonoBehaviour, INPCSelectable
         if (!CanBet)
             return;
 
+        nextAvailableTime = Time.time + CAN_BET_AGAIN_TIME;
         hasPerformedBet = true;
         PlayerCardCollection.PlaceBet(playerBetCard, betCard);
 
@@ -74,6 +81,8 @@ public class NPCBet : MonoBehaviour, INPCSelectable
 
         //Start duel after the bet is done
         CardDuelManager.Instance.StartDuelAgainstPlayer(GetComponent<CardDuelist>());
+
+        SFXManager.PlaySound(GlobalSFX.Bet);
     }
 
     private void OnCardSelected(ScriptableTGCCard card)

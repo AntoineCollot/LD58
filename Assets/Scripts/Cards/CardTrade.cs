@@ -14,6 +14,9 @@ public class CardTrade : MonoBehaviour, INPCSelectable
 
     bool IsVisible => panel.activeSelf;
     bool hasPerformedTrade;
+    float nextAvailableTime;
+    const float CAN_BE_TRADED_AGAIN_TIME = 60;
+    bool CanTrade => Time.time>nextAvailableTime;
 
     Animator anim;
 
@@ -47,7 +50,7 @@ public class CardTrade : MonoBehaviour, INPCSelectable
 
     public void ShowTrade()
     {
-        if (hasPerformedTrade)
+        if (!CanTrade)
             return;
         panel.SetActive(true);
         lookingForCardDisplay.Display(lookingForCard);
@@ -61,15 +64,20 @@ public class CardTrade : MonoBehaviour, INPCSelectable
 
     public void PerformTrade()
     {
-        if (hasPerformedTrade)
+        if (!CanTrade)
             return;
 
         if (PlayerCardCollection.Trade(giveCard, lookingForCard))
+        {
             hasPerformedTrade = true;
+            nextAvailableTime = Time.time + CAN_BE_TRADED_AGAIN_TIME;
+        }
         HideTrade();
 
         if (anim != null)
             anim.SetTrigger("Happy");
+
+        SFXManager.PlaySound(GlobalSFX.Trade);
     }
 
     public void HoverEnterMessage()

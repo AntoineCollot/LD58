@@ -198,7 +198,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Artworks_4
+      name: Potato
       rect:
         serializedVersion: 2
         x: 0
@@ -220,7 +220,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Artworks_5
+      name: Champi
       rect:
         serializedVersion: 2
         x: 512
@@ -242,7 +242,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Artworks_6
+      name: Melon
       rect:
         serializedVersion: 2
         x: 1024
@@ -264,7 +264,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Artworks_7
+      name: Banana
       rect:
         serializedVersion: 2
         x: 1536
@@ -286,7 +286,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Artworks_8
+      name: Artichaut
       rect:
         serializedVersion: 2
         x: 0
@@ -308,7 +308,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Artworks_9
+      name: Tomato
       rect:
         serializedVersion: 2
         x: 512
@@ -330,7 +330,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Artworks_10
+      name: Haricot
       rect:
         serializedVersion: 2
         x: 1024
@@ -352,7 +352,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Artworks_11
+      name: Poivron
       rect:
         serializedVersion: 2
         x: 1536
@@ -475,22 +475,22 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      Artworks_10: 512171158
-      Artworks_11: 1560920344
+      Artichaut: -25038798
       Artworks_12: -1119828645
       Artworks_13: 1225456333
       Artworks_14: -1112638693
       Artworks_15: -1469049451
-      Artworks_4: -1486536007
-      Artworks_5: 766663874
-      Artworks_6: 2079625059
-      Artworks_7: 905277094
-      Artworks_8: -25038798
-      Artworks_9: -1367242647
+      Banana: 905277094
       BrocoRocko: 429353134
+      Champi: 766663874
       CutyTurny: 2119981678
+      Haricot: 512171158
       Karot: 1817450760
       LeakLeek: -1485828185
+      Melon: 2079625059
+      Poivron: 1560920344
+      Potato: -1486536007
+      Tomato: -1367242647
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

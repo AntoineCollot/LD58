@@ -10,10 +10,11 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 9120fe75e961a7b479baebed20b5e8f9, type: 3}
-  m_Name: CutyTurny
+  m_Name: HarryBros
   m_EditorClassIdentifier: 
-  cardName: Cuty Turny
-  artwork: {fileID: 2119981678, guid: 960cd433a789ba149bdd61f92eb3e274, type: 3}
-  power: 0
+  cardName: Harry Bros
+  artwork: {fileID: 512171158, guid: 960cd433a789ba149bdd61f92eb3e274, type: 3}
+  isRare: 1
+  power: 8
   strength: 1
-  hp: 2
+  hp: 3

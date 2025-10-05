@@ -26,7 +26,7 @@ public class CardDuelManager : MonoBehaviour
     [SerializeField] GameObject duelStartText;
     [SerializeField] GameObject duelVictoryText;
     [SerializeField] GameObject duelLostText;
-    const float TURN_ACTION_DURATION = 0.8f;
+    const float TURN_ACTION_DURATION = 1f;
 
     //player
     CompositeStateToken freezePlayerToken;
@@ -77,7 +77,7 @@ public class CardDuelManager : MonoBehaviour
 
         opponent.EnterDuel();
 
-        StartDuel(new CardBattleTeam(player.Cards.ToArray(), TeamDir.Left), new CardBattleTeam(opponent.Cards.ToArray(), TeamDir.Right));
+        StartDuel(new CardBattleTeam(player.CardsAsPlayer.ToArray(), TeamDir.Left), new CardBattleTeam(opponent.Cards.ToArray(), TeamDir.Right));
     }
 
     void StartDuel(CardBattleTeam player, CardBattleTeam opponent)
@@ -99,6 +99,7 @@ public class CardDuelManager : MonoBehaviour
         rightTeam = opponent;
         HideCards();
 
+        SFXManager.PlaySound(GlobalSFX.DuelStart);
         duelStartText.gameObject.SetActive(true);
         yield return new WaitForSeconds(1.5f);
         duelStartText.gameObject.SetActive(false);
@@ -128,9 +129,15 @@ public class CardDuelManager : MonoBehaviour
         yield return new WaitForSeconds(1);
 
         if (victory)
+        {
+            SFXManager.PlaySound(GlobalSFX.Victory);
             duelVictoryText.gameObject.SetActive(true);
+        }
         else
+        {
+            SFXManager.PlaySound(GlobalSFX.Defeat);
             duelLostText.gameObject.SetActive(true);
+        }
 
         yield return new WaitForSeconds(2.5f);
 
@@ -175,6 +182,94 @@ public class CardDuelManager : MonoBehaviour
         }
     }
 
+    public void RegisterCardDied(CardBattle card)
+    {
+        if (!dyingCards.Contains(card))
+            dyingCards.Add(card);
+    }
+
+    bool ProcessDeadCards()
+    {
+        if (dyingCards.Count == 0)
+            return false;
+
+        foreach (CardBattle deadCard in dyingCards)
+        {
+            var cards = GetAllCardsInDisplayOrder();
+            for (int i = 0; i < cards.Count; i++)
+            {
+                cards[i].power?.PostCardDie(deadCard);
+            }
+            SFXManager.PlaySound(GlobalSFX.DuelDie);
+            onCardDied?.Invoke(deadCard);
+        }
+
+        dyingCards.Clear();
+        return true;
+    }
+
+    public void RegisterAction(CardBattle source, CardBattle target, BattleActionType action, int amount, bool isMultiAction = false)
+    {
+        RegisterAction(new BattleAction(source, target, action, amount, isMultiAction));
+    }
+
+    public void RegisterAction(BattleAction action)
+    {
+        actionQueue.Enqueue(action);
+    }
+
+    bool TryProcessNextAction(out bool shouldWait)
+    {
+        shouldWait = true;
+        if (!actionQueue.TryDequeue(out BattleAction action))
+            return false;
+
+        //Pre callbacks
+        action.source.power?.PreAction(action);
+        action.target.power?.PreAction(action);
+
+        var cards = GetAllCardsInDisplayOrder();
+        for (int i = 0; i < cards.Count; i++)
+        {
+            cards[i].power?.PreAnyAction(action);
+        }
+
+        //Apply damages
+        switch (action.type)
+        {
+            case BattleActionType.AttackDamage:
+                action.target.Damage(action.amount);
+                SFXManager.PlaySound(GlobalSFX.DuelAttack);
+                break;
+            case BattleActionType.PowerDamage:
+                action.target.Damage(action.amount);
+                SFXManager.PlaySound(GlobalSFX.DuelPower);
+                break;
+            case BattleActionType.Heal:
+                action.target.Heal(action.amount);
+                SFXManager.PlaySound(GlobalSFX.DuelHeal);
+                break;
+            default:
+                throw new NotImplementedException();
+        }
+
+        shouldWait = !action.isMultiAction;
+        onActionPlayed?.Invoke(action);
+
+        //post callbacks
+        action.source.power?.PostAction(action);
+        action.target.power?.PostAction(action);
+
+        for (int i = 0; i < cards.Count; i++)
+        {
+            cards[i].power?.PostAnyAction(action);
+        }
+
+        return true;
+    }
+    #endregion
+
+    #region GetCards
     public List<CardBattle> GetAllCardsInDisplayOrder()
     {
         List<CardBattle> cards = new();
@@ -215,84 +310,55 @@ public class CardDuelManager : MonoBehaviour
         }
     }
 
-    public void RegisterCardDied(CardBattle card)
+    public bool TryGetNextCard(CardBattle source, TeamDir dir, out CardBattle card)
     {
-        if (!dyingCards.Contains(card))
-            dyingCards.Add(card);
+        return TryGetNextCard(source.id, dir, out card);
     }
 
-    bool ProcessDeadCards()
+    public bool TryGetNextCard(int id, TeamDir dir, out CardBattle card)
     {
-        if (dyingCards.Count == 0)
-            return false;
-
-        foreach (CardBattle deadCard in dyingCards)
+        bool hasCards = true;
+        do
         {
-            var cards = GetAllCardsInDisplayOrder();
-            for (int i = 0; i < cards.Count; i++)
+            //Move next
+            switch (dir)
             {
-                cards[i].power?.PostCardDie(deadCard);
+                case TeamDir.Left:
+                default:
+                    id--;
+                    break;
+                case TeamDir.Right:
+                    id++;
+                    break;
             }
-            onCardDied?.Invoke(deadCard);
-        }
 
-        dyingCards.Clear();
-        return true;
+            hasCards = leftTeam.TryGetCardByID(id, out card);
+            if (!hasCards)
+                hasCards = rightTeam.TryGetCardByID(id, out card);
+
+            if (card.IsAlive)
+                return true;
+
+        } while (hasCards);
+
+        return false;
     }
 
-    public void RegisterAction(CardBattle source, CardBattle target, BattleActionType action, int amount, bool isMultiAction = false)
+    public bool TryGetRandomCard(TeamDir teamDir, out CardBattle card)
     {
-        RegisterAction(new BattleAction(source, target, action, amount, isMultiAction));
-    }
-
-    public void RegisterAction(BattleAction action)
-    {
-        actionQueue.Enqueue(action);
-    }
-
-    bool TryProcessNextAction(out bool shouldWait)
-    {
-        shouldWait = true;
-        if (!actionQueue.TryDequeue(out BattleAction action))
-            return false;
-
-        //Pre callbacks
-        action.source.power?.PreAction(action);
-        action.target.power?.PreAction(action);
-
-        var cards = GetAllCardsInDisplayOrder();
-        for (int i = 0; i < cards.Count; i++)
+        CardBattleTeam team;
+        switch (teamDir)
         {
-            cards[i].power?.PreAnyAction(action);
-        }
-
-        //Apply damages
-        switch (action.type)
-        {
-            case BattleActionType.AttackDamage:
-            case BattleActionType.PowerDamage:
-                action.target.Damage(action.amount);
-                break;
-            case BattleActionType.Heal:
-                action.target.Heal(action.amount);
-                break;
+            case TeamDir.Left:
             default:
-                throw new NotImplementedException();
+                team = leftTeam;
+                break;
+            case TeamDir.Right:
+                team = rightTeam;
+                break;
         }
 
-        shouldWait = !action.isMultiAction;
-        onActionPlayed?.Invoke(action);
-
-        //post callbacks
-        action.source.power?.PostAction(action);
-        action.target.power?.PostAction(action);
-
-        for (int i = 0; i < cards.Count; i++)
-        {
-            cards[i].power?.PostAnyAction(action);
-        }
-
-        return true;
+        return team.TryGetRandomCard(out card);
     }
     #endregion
 
@@ -328,6 +394,7 @@ public class CardDuelManager : MonoBehaviour
         {
             cardDisplays[displayID].Display(card.data);
             displayID++;
+            SFXManager.PlaySound(GlobalSFX.DuelReveal);
             yield return new WaitForSeconds(showCardInterval);
         }
 
@@ -338,6 +405,7 @@ public class CardDuelManager : MonoBehaviour
         {
             cardDisplays[displayID].Display(card.data);
             displayID--;
+            SFXManager.PlaySound(GlobalSFX.DuelReveal);
 
             yield return new WaitForSeconds(showCardInterval);
         }

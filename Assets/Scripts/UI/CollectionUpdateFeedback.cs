@@ -133,9 +133,11 @@ public class CollectionUpdateFeedback : MonoBehaviour
             case PlayerCardCollection.UpdateType.Mixed:
             default:
                 propertyID = Shader.PropertyToID(SHINE_PROPERTY);
+                SFXManager.PlaySound(GlobalSFX.GainCard);
                 break;
             case PlayerCardCollection.UpdateType.Removed:
                 propertyID = Shader.PropertyToID(DISSOLVE_PROPERTY);
+                SFXManager.PlaySound(GlobalSFX.LooseCard);
                 time *= 2;
                 break;
         }

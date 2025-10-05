@@ -47,6 +47,8 @@ public class NPCSelectable : MonoBehaviour
 
         if (anim != null)
             anim.SetFloat(SELECTED_PARAM, 2);
+
+        SFXManager.PlaySound(GlobalSFX.HoverNPC,gameObject.GetInstanceID());
     }
 
     public void OnSelectHoverExit()

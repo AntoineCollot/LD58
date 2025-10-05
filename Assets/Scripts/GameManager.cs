@@ -23,6 +23,22 @@ public class GameManager : MonoBehaviour
             StartGame();
     }
 
+    private void Start()
+    {
+        PlayerCardCollection.onCollectionUpdated += OnCollectionUpdate;
+    }
+
+    private void OnDestroy()
+    {
+        PlayerCardCollection.onCollectionUpdated -= OnCollectionUpdate;
+    }
+
+    private void OnCollectionUpdate(ScriptableTGCCard card, PlayerCardCollection.UpdateType type)
+    {
+        if (!gameIsOver && PlayerCardCollection.HasAllCards())
+            ClearLevel();
+    }
+
     public void StartGame()
     {
         if (gameHasStarted)
@@ -46,5 +62,6 @@ public class GameManager : MonoBehaviour
 
         gameIsOver = true;
         onGameWin.Invoke();
+        SFXManager.PlaySound(GlobalSFX.GameWin);
     }
 }

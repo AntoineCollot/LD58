@@ -29,6 +29,24 @@ public class CardDuelist : MonoBehaviour
             return cards;
         }
     }
+
+    public List<ScriptableTGCCard> CardsAsPlayer
+    {
+        get
+        {
+            List<ScriptableTGCCard> cards = new();
+            if (card0 != null && PlayerCardCollection.HasCard(card0))
+                cards.Add(card0);
+            if (card1 != null&& PlayerCardCollection.HasCard(card1))
+                cards.Add(card1);
+            if (card2 != null && PlayerCardCollection.HasCard(card2))
+                cards.Add(card2);
+            if (card3 != null && PlayerCardCollection.HasCard(card3))
+                cards.Add(card3);
+            return cards;
+        }
+    }
+
     private void Start()
     {
         anim = GetComponentInChildren<Animator>(true);
@@ -113,6 +131,40 @@ public class CardBattleTeam
         return teamCards.First(c => c.IsAlive);
     }
 
+    public bool TryGetCardByID(int id,out CardBattle card)
+    {
+        card = null;
+        switch (teamDir)
+        {
+            case TeamDir.Left:
+            default:
+                id = id - CardDuelist.MAX_TEAM_SIZE + 1;
+                break;
+            case TeamDir.Right:
+                id = id - CardDuelist.MAX_TEAM_SIZE;
+                break;
+        }
+
+        if (id >= teamCards.Count || id<0)
+            return false;
+
+        card = teamCards[id];
+        return true;
+    }
+
+    public bool TryGetRandomCard(out CardBattle card)
+    {
+        card = null;
+        if(teamCards.Count == 0)
+            return false;
+        List<CardBattle> cards = teamCards.Where(c => c.IsAlive).ToList();
+        if (cards.Count == 0)
+            return false;
+
+        card = cards[Random.Range(0, cards.Count())];
+        return true;
+    }
+
     public int AliveCardCount
     {
         get
@@ -141,7 +193,7 @@ public class CardBattleTeam
 
     public bool HasCardAlive => AliveCardCount > 0;
 
-    TeamDir teamDir;
+    public TeamDir teamDir { get;private set; }
     public List<CardBattle> teamCards;
 }
 

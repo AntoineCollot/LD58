@@ -77,7 +77,8 @@ public class CardBattleFeedback : MonoBehaviour
     {
         const float TURN_AROUND_TIME = 0.4f;
         float t = 0;
-        while(t<1)
+        cardBack.SetActive(false);
+        while (t<1)
         {
             t += Time.deltaTime/ TURN_AROUND_TIME;
 

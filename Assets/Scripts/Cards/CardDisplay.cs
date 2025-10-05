@@ -36,7 +36,7 @@ public class CardDisplay : MonoBehaviour,IWorldUISelectable
         description.text = data.power.GetDescrition();
 
         strength.text = data.strength.ToString();
-        hp.text = data.hp.ToString();
+        hp.text = Mathf.Max(0,data.hp).ToString();
 
         artworkImage.sprite = data.artwork;
     }
@@ -53,6 +53,8 @@ public class CardDisplay : MonoBehaviour,IWorldUISelectable
 
         onClick?.Invoke(currentCard);
         onAnyCardClick?.Invoke(currentCard);
+
+        SFXManager.PlaySound(GlobalSFX.CardSelect);
     }
 
     public void OnHoverEnter()

@@ -12,6 +12,10 @@ public class CardCollectionDisplay : MonoBehaviour
 
     InputMap inputMap;
 
+#if UNITY_EDITOR
+    [SerializeField] bool spawnWithEverything;
+#endif
+
     void Awake()
     {
         Instance = this;
@@ -22,6 +26,16 @@ public class CardCollectionDisplay : MonoBehaviour
         inputMap.Enable();
         inputMap.Main.Collection.performed += OnCollectionKeyPerformed;
 
+#if UNITY_EDITOR
+        if(spawnWithEverything)
+        {
+            ScriptableTGCCard[] cards = Resources.LoadAll<ScriptableTGCCard>("Cards");
+            foreach (ScriptableTGCCard card in cards)
+            {
+                PlayerCardCollection.AddCard(card);
+            }
+        }
+#endif
         PlayerCardCollection.onCollectionUpdated += OnCollectionUpdated;
     }
 
@@ -38,6 +52,7 @@ public class CardCollectionDisplay : MonoBehaviour
 
     private void Start()
     {
+        Hide();
         UpdateDisplay();
     }
 
@@ -66,11 +81,17 @@ public class CardCollectionDisplay : MonoBehaviour
 
     public void Show()
     {
+        if (NPCBet.isInAnyBetSelect)
+        {
+            SetCardsInteractive(true);
+        }
         panel.SetActive(true);
+        SFXManager.PlaySound(GlobalSFX.OpenBook);
     }
 
     public void Hide()
     {
+        SFXManager.PlaySound(GlobalSFX.CloseBook);
         panel.SetActive(false);
     }
 

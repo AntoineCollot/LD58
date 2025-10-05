@@ -3,6 +3,7 @@ using UnityEngine;
 public class LookPlayerDirection : MonoBehaviour
 {
     PlayerMovement movement;
+    float angle, targetAngle, refAngle;
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
@@ -13,8 +14,12 @@ public class LookPlayerDirection : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        Vector3 lookAtTarget = transform.position + movement.playerCam.transform.forward;
-        lookAtTarget.y = 0;
-        transform.LookAt(lookAtTarget);
+        Vector3 camVector = movement.playerCam.transform.forward;
+        camVector.y = 0;
+        targetAngle = Vector3.SignedAngle(Vector3.forward,camVector.normalized, Vector3.up);
+        angle = Mathf.SmoothDampAngle(angle, targetAngle, ref refAngle, 0.1f);
+        Debug.Log("Angle: " + angle + "|" + targetAngle);
+
+        transform.rotation = Quaternion.Euler(0, angle, 0);
     }
 }

@@ -6,6 +6,7 @@ public class ScriptableTGCCard : ScriptableObject
     [Header("Info")]
     public string cardName;
     public Sprite artwork;
+    public bool isRare;
 
     [Header("Stats")]
     public CardPower power;

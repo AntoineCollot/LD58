@@ -92,11 +92,11 @@ public class AimSelect : MonoBehaviour
         if (worldUIHovered != null && worldUIHovered != newHovered)
             worldUIHovered.OnHoverExit();
 
-        worldUIHovered = newHovered;
-        if (newHovered != null)
+        if (newHovered != null && newHovered!=worldUIHovered)
         {
             newHovered.OnHoverEnter();
         }
+        worldUIHovered = newHovered;
     }
 
     void Aim3D()

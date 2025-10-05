@@ -55,6 +55,22 @@ public static class PlayerCardCollection
         return count;
     }
 
+    public static int GetDifferentCardCount()
+    {
+        int count = 0;
+        foreach (var keyValue in collection)
+        {
+            if(keyValue.Value>0)
+                count++;
+        }
+        return count;
+    }
+
+    public static bool HasAllCards()
+    {
+        return GetDifferentCardCount() == 12;
+    }
+
     public static bool HasCard(ScriptableTGCCard card)
     {
         return GetCardCount(card) > 0;

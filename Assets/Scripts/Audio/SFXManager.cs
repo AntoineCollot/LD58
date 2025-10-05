@@ -7,22 +7,26 @@ using UnityEditor;
 
 public enum GlobalSFX
 {
-    Jump,
-    Land,
-    EnemyDeath,
-    CatKill,
-    EagleKill,
-    CatAttack,
-    EagleAttack,
-    Hit,
-    Slide,
-    Kick,
-    Dive,
-    DiveLanding,
-    PlayerDeath,
-    ButtonClick,
-    ProjectileExplosion,
-    LevelCleared,
+   Trade,
+   Bet,
+   Victory,
+   Defeat,
+   GainCard,
+   LooseCard,
+   OpenBook,
+   CardSelect,
+   CloseBook,
+   HoverNPC,
+   DuelStart,
+   DuelAttack,
+   DuelHeal,
+   DuelPower,
+   DuelDie,
+   DuelReveal,
+   PickUpCard,
+   GameWin,
+   ButtonHover,
+   ButtonClick,
 }
 public class SFXManager : MonoBehaviour
 {
@@ -33,6 +37,9 @@ public class SFXManager : MonoBehaviour
     public const float MIN_SFX_INTERVAL = 0.1f;
 
     AudioSource audioSource = null;
+
+    [Header("Hover")]
+    [SerializeField] AudioClip[] hoverClips;
 
     public static SFXManager Instance;
 
@@ -48,10 +55,16 @@ public class SFXManager : MonoBehaviour
         audioSource = GetComponent<AudioSource>();
     }
 
-    public static void PlaySound(GlobalSFX sfx)
+    public static void PlaySound(GlobalSFX sfx, int seed =0)
     {
         if (Instance == null || (Instance.lastSFX == sfx && Time.time - Instance.lastSFXTime < MIN_SFX_INTERVAL))
             return;
+
+        if(sfx == GlobalSFX.HoverNPC)
+        {
+            Instance.PlayRandomHover(seed);
+            return;
+        }
 
         PlaySound((int)sfx);
         Instance.lastSFX = sfx;
@@ -63,6 +76,12 @@ public class SFXManager : MonoBehaviour
         if (Instance == null)
             return;
         Instance.audioSource.PlayOneShot(Instance.bank.clips[id], Instance.bank.volumes[id]);
+    }
+
+    public void PlayRandomHover(int seed)
+    {
+        int randID = Mathf.Abs(seed) % hoverClips.Length;
+        audioSource.PlayOneShot(hoverClips[randID], Instance.bank.volumes[(int)GlobalSFX.HoverNPC]);
     }
 }
 

@@ -6,6 +6,7 @@ public class WorldUIButton : MonoBehaviour, IWorldUISelectable
 {
     protected Image image;
     [SerializeField] protected Sprite hoverSprite;
+    [SerializeField] bool playAudio = true;
     protected Sprite idleSprite;
 
     public event Action onClick;
@@ -18,11 +19,15 @@ public class WorldUIButton : MonoBehaviour, IWorldUISelectable
 
     public virtual void OnClick()
     {
+        if (playAudio)
+            SFXManager.PlaySound(GlobalSFX.ButtonClick);
         onClick?.Invoke();
     }
 
     public void OnHoverEnter()
     {
+        if (playAudio)
+            SFXManager.PlaySound(GlobalSFX.ButtonHover);
         image.sprite = hoverSprite;
     }
 
