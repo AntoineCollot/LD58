@@ -10,9 +10,7 @@ public class TeamSelection : MonoBehaviour
     [SerializeField] WorldUIButton toggleButton;
     [SerializeField] WorldUIButton showPanelButton;
     [SerializeField] GameObject[] toEnableDuringTeamSelection;
-    CardDisplay[] collectionCardDisplays;
     CardDuelist duelist;
-    LookPlayerDirection lookDirection;
 
     bool isInTeamSelection;
     public bool isVisible => panel.activeSelf;
@@ -20,9 +18,7 @@ public class TeamSelection : MonoBehaviour
 
     private void Awake()
     {
-        collectionCardDisplays = cardCollectionGrid.GetComponentsInChildren<CardDisplay>(true);
         duelist = GetComponentInParent<CardDuelist>(true);
-        lookDirection = GetComponentInParent<LookPlayerDirection>(true);
     }
 
     void Start()
@@ -54,14 +50,12 @@ public class TeamSelection : MonoBehaviour
 
     public void Show()
     {
-        lookDirection.enabled = false;
         panel.SetActive(true);
     }
 
-    public void Hide()
+    public void Hide(bool doNotResetCardInteractivity = false)
     {
-        EndTeamSelection();
-        lookDirection.enabled = true;
+        EndTeamSelection(doNotResetCardInteractivity);
         panel.SetActive(false);
     }
 
@@ -77,14 +71,18 @@ public class TeamSelection : MonoBehaviour
     {
         if (isInTeamSelection)
             EndTeamSelection();
-        else
+        else if(!NPCBet.isInAnyBetSelect)
             EnterTeamSelection();
     }
 
     void Update()
     {
+        if (isInTeamSelection && NPCBet.isInAnyBetSelect)
+        { 
+            Hide(true);
+        }
         //Stop if we leave the collection
-        if (isInTeamSelection && !CardCollectionDisplay.Instance.IsVisible)
+        else if (isInTeamSelection && !CardCollectionDisplay.Instance.IsVisible)
         {
             EndTeamSelection();
             Hide();
@@ -98,18 +96,19 @@ public class TeamSelection : MonoBehaviour
 
         CardDisplay.onAnyCardClick -= OnAnyCardClick;
         CardDisplay.onAnyCardClick += OnAnyCardClick;
-        SetCollectionCardsInteractive(true);
         selectedCards = new();
+        CardCollectionDisplay.Instance.SetCardsInteractive(true);
 
         EnableShowObjects(true);
     }
 
-    void EndTeamSelection()
+    void EndTeamSelection(bool doNotResetCardInteractivity = false)
     {
         EnableShowObjects(false);
 
         selectedCards = null;
-        SetCollectionCardsInteractive(false);
+        if (!doNotResetCardInteractivity)
+            CardCollectionDisplay.Instance.SetCardsInteractive(false);
         isInTeamSelection = false;
         CardDisplay.onAnyCardClick -= OnAnyCardClick;
     }
@@ -153,14 +152,6 @@ public class TeamSelection : MonoBehaviour
         for (int i = 0; i < teamDisplays.Length; i++)
         {
             teamDisplays[i].Hide();
-        }
-    }
-
-    void SetCollectionCardsInteractive(bool value)
-    {
-        foreach (var display in collectionCardDisplays)
-        {
-            display.isInteractive = value;
         }
     }
 }

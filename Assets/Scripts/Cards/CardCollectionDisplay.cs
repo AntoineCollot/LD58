@@ -6,12 +6,16 @@ public class CardCollectionDisplay : MonoBehaviour
     [SerializeField] GameObject panel;
     CardCollectionSlot[] slots;
     public bool IsVisible => panel.activeSelf;
+    LookPlayerDirection lookDirection;
+
+    bool areCardInteractive;
 
     InputMap inputMap;
 
     void Awake()
     {
         Instance = this;
+        lookDirection = GetComponentInParent<LookPlayerDirection>(true);
         slots = GetComponentsInChildren<CardCollectionSlot>(true);
 
         inputMap = new InputMap();
@@ -35,6 +39,11 @@ public class CardCollectionDisplay : MonoBehaviour
     private void Start()
     {
         UpdateDisplay();
+    }
+
+    private void Update()
+    {
+        lookDirection.enabled = !areCardInteractive || !IsVisible;
     }
 
     private void OnCollectionUpdated()
@@ -71,5 +80,14 @@ public class CardCollectionDisplay : MonoBehaviour
         {
             slot.Display(PlayerCardCollection.GetCardCount(slot.cardToDisplay));
         }
+    }
+
+    public void SetCardsInteractive(bool value)
+    {
+        foreach (var slot in slots)
+        {
+            slot.SetCardInteractive(value);
+        }
+        areCardInteractive = value;
     }
 }

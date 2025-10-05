@@ -21,6 +21,8 @@ public class CardTrade : MonoBehaviour, INPCSelectable
     {
         anim = GetComponentInChildren<Animator>(true);
         performTradeButton.onClick += OnPerformTradeClicked;
+
+        HideTrade();
     }
 
     void OnDestroy()

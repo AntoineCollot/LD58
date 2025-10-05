@@ -18,9 +18,14 @@ public class CardDuelManager : MonoBehaviour
     public event Action onDuelStart;
     public event Action onDuelEnd;
 
-    [Header("Display")]
+    [Header("Duel Display")]
     [SerializeField] CardDisplay[] cardDisplays;
     [SerializeField] Transform panel;
+
+    [Header("Text anims")]
+    [SerializeField] GameObject duelStartText;
+    [SerializeField] GameObject duelVictoryText;
+    [SerializeField] GameObject duelLostText;
     const float TURN_ACTION_DURATION = 0.8f;
 
     //player
@@ -42,12 +47,6 @@ public class CardDuelManager : MonoBehaviour
         HideCards();
     }
 
-    // Update is called once per frame
-    void Update()
-    {
-
-    }
-
     void HideCards()
     {
         foreach (CardDisplay display in cardDisplays)
@@ -57,6 +56,13 @@ public class CardDuelManager : MonoBehaviour
     }
 
     #region Duel
+    public void StartDuelAgainstPlayer(CardDuelist opponent)
+    {
+        CardDuelist player = PlayerState.Instance.GetComponent<CardDuelist>();
+
+        StartDuel(player, opponent);
+    }
+
     public void StartDuel(CardDuelist player, CardDuelist opponent)
     {
         //place in between
@@ -91,10 +97,15 @@ public class CardDuelManager : MonoBehaviour
 
         leftTeam = player;
         rightTeam = opponent;
+        HideCards();
 
-        UpdateDisplay();
+        duelStartText.gameObject.SetActive(true);
+        yield return new WaitForSeconds(1.5f);
+        duelStartText.gameObject.SetActive(false);
 
-        yield return new WaitForSeconds(1);
+        yield return StartCoroutine(ShowCardsOneByOne(0.5f));
+
+        yield return new WaitForSeconds(0.5f);
 
         while (turns < MAX_TURNS)
         {
@@ -113,10 +124,21 @@ public class CardDuelManager : MonoBehaviour
             //player turn
             yield return StartCoroutine(PlayTurn(player, opponent));
         }
-
         Debug.Log("Duel finished! Victory: " + victory);
-
         yield return new WaitForSeconds(1);
+
+        if (victory)
+            duelVictoryText.gameObject.SetActive(true);
+        else
+            duelLostText.gameObject.SetActive(true);
+
+        yield return new WaitForSeconds(2.5f);
+
+        duelLostText.gameObject.SetActive(false);
+        duelVictoryText.gameObject.SetActive(false);
+
+        //Execute bet if any
+        PlayerCardCollection.PerformBet(victory);
 
         onDuelEnd?.Invoke();
         freezePlayerToken.SetOn(false);
@@ -176,7 +198,7 @@ public class CardDuelManager : MonoBehaviour
             if (cards[i] == source)
             {
                 //Try get right card
-                for (int j = i+1; j < cards.Count; j++)
+                for (int j = i + 1; j < cards.Count; j++)
                 {
                     if (cards[j].IsAlive)
                     {
@@ -294,6 +316,30 @@ public class CardDuelManager : MonoBehaviour
         {
             cardDisplays[displayID].Display(card.data);
             displayID++;
+        }
+    }
+
+    IEnumerator ShowCardsOneByOne(float showCardInterval)
+    {
+        HideCards();
+        //Right Team
+        int displayID = 4;
+        foreach (CardBattle card in rightTeam.teamCards)
+        {
+            cardDisplays[displayID].Display(card.data);
+            displayID++;
+            yield return new WaitForSeconds(showCardInterval);
+        }
+
+        //Left team starts at 3 id and goes down
+        displayID = 3;
+        //Foreach left team
+        foreach (CardBattle card in leftTeam.teamCards)
+        {
+            cardDisplays[displayID].Display(card.data);
+            displayID--;
+
+            yield return new WaitForSeconds(showCardInterval);
         }
     }
     #endregion

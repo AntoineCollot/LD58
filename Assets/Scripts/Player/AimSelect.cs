@@ -118,26 +118,57 @@ public class AimSelect : MonoBehaviour
             }
         }
 
-        if (currentHovered != selectable && currentHovered != null)
+        if (selectable == currentHovered)
+            return;
+
+        //Check if deselect
+        if (selectable == null && currentHovered != null)
         {
-            currentHovered.OnSelectHoverExit();
+            if(CheckIfShouldDeselect())
+            {
+                currentHovered.OnSelectHoverExit();
+                currentHovered = null;
+            }    
         }
 
-        currentHovered = selectable;
-
+        //Select something else
         if (selectable != null)
         {
+            if (currentHovered != selectable && currentHovered != null)
+            {
+                currentHovered.OnSelectHoverExit();
+            }
+
+            currentHovered = selectable;
+
             selectable.OnSelectHoverEnter();
             onHover?.Invoke(selectable);
         }
-
-
     }
 
     void DeselectNPC()
     {
         currentHovered?.OnSelectHoverExit();
         currentHovered = null;
+    }
+
+    /// <summary>
+    /// Only deselect when far or 180 degree to avoid messing with card selection
+    /// </summary>
+    bool CheckIfShouldDeselect()
+    {
+        Vector3 playerForward = Camera.main.transform.forward;
+        playerForward.y = 0;
+        playerForward.Normalize();
+
+        Vector3 fromPlayer = currentHovered.transform.position - PlayerState.Instance.transform.position;
+        fromPlayer.y = 0;
+        float dist = fromPlayer.magnitude;
+        fromPlayer.Normalize();
+        if (Vector3.Dot(playerForward, fromPlayer) >= 0 && dist < maxDistance + aimWidth+1)
+            return false;
+
+        return true;
     }
 
 #if UNITY_EDITOR

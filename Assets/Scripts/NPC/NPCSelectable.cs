@@ -9,6 +9,17 @@ public class NPCSelectable : MonoBehaviour
 
     Quaternion refRotate;
     const float LOOK_SMOOTH = 0.3f;
+    Animator anim;
+
+    const string SELECTED_PARAM = "Selected";
+
+    private void Start()
+    {
+        anim = GetComponentInChildren<Animator>(true);
+
+        if (anim != null)
+            anim.SetFloat(SELECTED_PARAM, 1);
+    }
 
     private void Update()
     {
@@ -33,6 +44,9 @@ public class NPCSelectable : MonoBehaviour
         model.gameObject.layer = LayerMask.NameToLayer("NPCOutline");
 
         gameObject.SendMessage("HoverEnterMessage",SendMessageOptions.DontRequireReceiver);
+
+        if (anim != null)
+            anim.SetFloat(SELECTED_PARAM, 2);
     }
 
     public void OnSelectHoverExit()
@@ -45,6 +59,9 @@ public class NPCSelectable : MonoBehaviour
         model.gameObject.layer = LayerMask.NameToLayer("NPC");
 
         gameObject.SendMessage("HoverExitMessage", SendMessageOptions.DontRequireReceiver);
+
+        if (anim != null)
+            anim.SetFloat(SELECTED_PARAM, 1);
     }
 
     public void NPCSelect()

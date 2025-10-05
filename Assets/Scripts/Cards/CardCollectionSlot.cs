@@ -29,4 +29,9 @@ public class CardCollectionSlot : MonoBehaviour
         countText.text = "x" + count.ToString();
         display.Display(cardToDisplay);
     }
+
+    public void SetCardInteractive(bool value)
+    {
+        display.isInteractive = value;
+    }
 }
