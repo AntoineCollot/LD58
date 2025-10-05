@@ -4,11 +4,11 @@ using UnityEngine.Events;
 public class NPCSelectable : MonoBehaviour
 {
     bool isHovered;
-    [SerializeField] MeshRenderer model;
+    [SerializeField] GameObject model;
     [SerializeField] bool lookPlayer;
 
     Quaternion refRotate;
-    const float LOOK_SMOOTH = 0.4f;
+    const float LOOK_SMOOTH = 0.3f;
 
     private void Update()
     {
@@ -20,7 +20,7 @@ public class NPCSelectable : MonoBehaviour
     {
         Vector3 toPlayer = transform.position - PlayerState.Instance.transform.position;
         toPlayer.y = 0;
-        Quaternion target = Quaternion.LookRotation(toPlayer, Vector3.up);
+        Quaternion target = Quaternion.LookRotation(-toPlayer, Vector3.up);
         transform.rotation =QuaternionUtils.SmoothDamp(transform.rotation, target, ref refRotate, LOOK_SMOOTH);
     }
 

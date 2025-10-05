@@ -15,14 +15,17 @@ public class CardTrade : MonoBehaviour, INPCSelectable
     bool IsVisible => panel.activeSelf;
     bool hasPerformedTrade;
 
+    Animator anim;
+
     void Start()
     {
+        anim = GetComponentInChildren<Animator>(true);
         performTradeButton.onClick += OnPerformTradeClicked;
     }
 
     void OnDestroy()
     {
-        if(performTradeButton != null)
+        if (performTradeButton != null)
             performTradeButton.onClick -= OnPerformTradeClicked;
     }
 
@@ -31,7 +34,7 @@ public class CardTrade : MonoBehaviour, INPCSelectable
         if (!IsVisible)
             return;
 
-        performTradeButton.gameObject.SetActive(PlayerCardCollection.HasCard(lookingForCard)); 
+        performTradeButton.gameObject.SetActive(PlayerCardCollection.HasCard(lookingForCard));
     }
 
     private void OnPerformTradeClicked()
@@ -45,8 +48,8 @@ public class CardTrade : MonoBehaviour, INPCSelectable
         if (hasPerformedTrade)
             return;
         panel.SetActive(true);
-        lookingForCardDisplay.Display(lookingForCard.CardData);
-        giveDisplay.Display(giveCard.CardData);
+        lookingForCardDisplay.Display(lookingForCard);
+        giveDisplay.Display(giveCard);
     }
 
     public void HideTrade()
@@ -59,9 +62,12 @@ public class CardTrade : MonoBehaviour, INPCSelectable
         if (hasPerformedTrade)
             return;
 
-        if(PlayerCardCollection.Trade(giveCard, lookingForCard))
+        if (PlayerCardCollection.Trade(giveCard, lookingForCard))
             hasPerformedTrade = true;
         HideTrade();
+
+        if (anim != null)
+            anim.SetTrigger("Happy");
     }
 
     public void HoverEnterMessage()

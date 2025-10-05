@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -11,10 +12,16 @@ public class CardDuelManager : MonoBehaviour
     CardBattleTeam rightTeam;
 
     List<CardBattle> dyingCards = new();
+    Queue<BattleAction> actionQueue = new Queue<BattleAction>();
+    public event Action<BattleAction> onActionPlayed;
+    public event Action<CardBattle> onCardDied;
+    public event Action onDuelStart;
+    public event Action onDuelEnd;
 
     [Header("Display")]
     [SerializeField] CardDisplay[] cardDisplays;
-    const float TURN_ACTION_DURATION = 0.2f;
+    [SerializeField] Transform panel;
+    const float TURN_ACTION_DURATION = 0.8f;
 
     //player
     CompositeStateToken freezePlayerToken;
@@ -27,7 +34,10 @@ public class CardDuelManager : MonoBehaviour
     void Start()
     {
         freezePlayerToken = new();
-        PlayerState.Instance.freezeInputState.Add(freezePlayerToken);
+        PlayerState.Instance.freezeMoveState.Add(freezePlayerToken);
+        PlayerState.Instance.freezeClickState.Add(freezePlayerToken);
+
+        panel.gameObject.SetActive(false);
 
         HideCards();
     }
@@ -49,16 +59,30 @@ public class CardDuelManager : MonoBehaviour
     #region Duel
     public void StartDuel(CardDuelist player, CardDuelist opponent)
     {
-        StartDuel(new CardBattleTeam(player.Cards.ToArray()), new CardBattleTeam(opponent.Cards.ToArray()));
+        //place in between
+        Vector3 targetPos = (player.transform.position + opponent.transform.position) * 0.5f;
+        targetPos.y = panel.position.y;
+        panel.position = targetPos;
+
+        //Look at player
+        Vector3 lookAt = player.transform.position;
+        lookAt.y = transform.position.y;
+        panel.LookAt(lookAt);
+
+        opponent.EnterDuel();
+
+        StartDuel(new CardBattleTeam(player.Cards.ToArray(), TeamDir.Left), new CardBattleTeam(opponent.Cards.ToArray(), TeamDir.Right));
     }
 
-    public void StartDuel(CardBattleTeam player, CardBattleTeam opponent)
+    void StartDuel(CardBattleTeam player, CardBattleTeam opponent)
     {
+        panel.gameObject.SetActive(true);
         StartCoroutine(Duel(player, opponent));
     }
 
     IEnumerator Duel(CardBattleTeam player, CardBattleTeam opponent)
     {
+        onDuelStart?.Invoke();
         freezePlayerToken.SetOn(true);
 
         int turns = 0;
@@ -69,6 +93,8 @@ public class CardDuelManager : MonoBehaviour
         rightTeam = opponent;
 
         UpdateDisplay();
+
+        yield return new WaitForSeconds(1);
 
         while (turns < MAX_TURNS)
         {
@@ -89,11 +115,13 @@ public class CardDuelManager : MonoBehaviour
         }
 
         Debug.Log("Duel finished! Victory: " + victory);
-        freezePlayerToken.SetOn(false);
 
         yield return new WaitForSeconds(1);
 
+        onDuelEnd?.Invoke();
+        freezePlayerToken.SetOn(false);
         HideCards();
+        panel.gameObject.SetActive(false);
     }
 
     IEnumerator PlayTurn(CardBattleTeam team, CardBattleTeam other)
@@ -101,30 +129,22 @@ public class CardDuelManager : MonoBehaviour
         CardBattle playingCard = team.GetFirstCard();
         CardBattle targetCard = other.GetFirstCard();
 
-        //Pre callbacks
-        playingCard.power?.PreAttack(targetCard);
-        targetCard.power?.PreReceiveAttack(playingCard);
+        BattleAction attackAction = new BattleAction(playingCard, targetCard, BattleActionType.AttackDamage, playingCard.data.strength);
+        RegisterAction(attackAction);
 
-        var cards = GetAllCardsInDisplayOrder();
-        for (int i = 0; i < cards.Count; i++)
+        const int MAX_LOOPS = 30;
+        int loops = 0;
+        while (TryProcessNextAction(out bool shouldWait) && loops < MAX_LOOPS)
         {
-            cards[i].power?.PreAnyAttack(playingCard, targetCard);
+            loops++;
+            UpdateDisplay();
+
+            if (shouldWait)
+                yield return new WaitForSeconds(TURN_ACTION_DURATION);
         }
 
         //First card of the playing team attacks the first of opposite team
-        playingCard.AttackCard(targetCard);
-        UpdateDisplay();
-
-        yield return new WaitForSeconds(TURN_ACTION_DURATION);
-
-        //Pre callbacks
-        playingCard.power?.PostAttack(targetCard);
-        targetCard.power?.PostReceiveAttack(playingCard);
-
-        for (int i = 0; i < cards.Count; i++)
-        {
-            cards[i].power?.PostAnyAttack(playingCard, targetCard);
-        }
+        //playingCard.AttackCard(targetCard);
 
         while (ProcessDeadCards())
         {
@@ -156,7 +176,7 @@ public class CardDuelManager : MonoBehaviour
             if (cards[i] == source)
             {
                 //Try get right card
-                for (int j = i; j < cards.Count; j++)
+                for (int j = i+1; j < cards.Count; j++)
                 {
                     if (cards[j].IsAlive)
                     {
@@ -191,9 +211,65 @@ public class CardDuelManager : MonoBehaviour
             {
                 cards[i].power?.PostCardDie(deadCard);
             }
+            onCardDied?.Invoke(deadCard);
         }
 
         dyingCards.Clear();
+        return true;
+    }
+
+    public void RegisterAction(CardBattle source, CardBattle target, BattleActionType action, int amount, bool isMultiAction = false)
+    {
+        RegisterAction(new BattleAction(source, target, action, amount, isMultiAction));
+    }
+
+    public void RegisterAction(BattleAction action)
+    {
+        actionQueue.Enqueue(action);
+    }
+
+    bool TryProcessNextAction(out bool shouldWait)
+    {
+        shouldWait = true;
+        if (!actionQueue.TryDequeue(out BattleAction action))
+            return false;
+
+        //Pre callbacks
+        action.source.power?.PreAction(action);
+        action.target.power?.PreAction(action);
+
+        var cards = GetAllCardsInDisplayOrder();
+        for (int i = 0; i < cards.Count; i++)
+        {
+            cards[i].power?.PreAnyAction(action);
+        }
+
+        //Apply damages
+        switch (action.type)
+        {
+            case BattleActionType.AttackDamage:
+            case BattleActionType.PowerDamage:
+                action.target.Damage(action.amount);
+                break;
+            case BattleActionType.Heal:
+                action.target.Heal(action.amount);
+                break;
+            default:
+                throw new NotImplementedException();
+        }
+
+        shouldWait = !action.isMultiAction;
+        onActionPlayed?.Invoke(action);
+
+        //post callbacks
+        action.source.power?.PostAction(action);
+        action.target.power?.PostAction(action);
+
+        for (int i = 0; i < cards.Count; i++)
+        {
+            cards[i].power?.PostAnyAction(action);
+        }
+
         return true;
     }
     #endregion
@@ -221,4 +297,28 @@ public class CardDuelManager : MonoBehaviour
         }
     }
     #endregion
+}
+
+public enum TeamDir { Left, Right }
+public enum BattleActionType { AttackDamage, PowerDamage, Heal }
+public class BattleAction
+{
+    public CardBattle source;
+    public CardBattle target;
+    public BattleActionType type;
+    public int amount;
+    public bool isMultiAction;
+
+    public BattleAction()
+    {
+    }
+
+    public BattleAction(CardBattle source, CardBattle target, BattleActionType type, int amount, bool isMultiAction = false)
+    {
+        this.source = source;
+        this.target = target;
+        this.type = type;
+        this.amount = amount;
+        this.isMultiAction = isMultiAction;
+    }
 }

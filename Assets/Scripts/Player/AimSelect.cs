@@ -16,16 +16,44 @@ public class AimSelect : MonoBehaviour
     public event Action<NPCSelectable> onHover;
     public event Action<NPCSelectable> onSelect;
 
+    InputMap inputMap;
+
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
+        inputMap = new InputMap();
+        inputMap.Enable();
+        inputMap.Main.Click.performed += OnClickPerformed;
+    }
 
+    private void OnDestroy()
+    {
+        if (inputMap != null)
+        {
+            inputMap.Main.Click.performed -= OnClickPerformed;
+            inputMap.Disable();
+            inputMap.Dispose();
+        }
+    }
+
+    private void OnClickPerformed(InputAction.CallbackContext obj)
+    {
+        //Click
+        if (worldUIHovered != null)
+        {
+            worldUIHovered.OnClick();
+        }
+        else if (currentHovered != null)
+        {
+            currentHovered.NPCSelect();
+            onSelect?.Invoke(currentHovered);
+        }
     }
 
     // Update is called once per frame
     void Update()
     {
-        if (PlayerState.Instance.AreInputFrozen)
+        if (!PlayerState.Instance.CanClick)
         {
             DeselectNPC();
             return;
@@ -44,11 +72,19 @@ public class AimSelect : MonoBehaviour
         EventSystem.current.RaycastAll(pointer, results);
 
         IWorldUISelectable newHovered = null;
+        float minDist = maxDistance;
         foreach (RaycastResult result in results)
         {
             if (result.gameObject.TryGetComponent(out IWorldUISelectable worldUI))
             {
-                newHovered = worldUI;
+                Vector3 toUI = result.gameObject.transform.position - transform.position;
+                toUI.y = 0;
+                float dist = toUI.magnitude;
+                if (dist < minDist)
+                {
+                    minDist = dist;
+                    newHovered = worldUI;
+                }
                 break;
             }
         }
@@ -60,12 +96,6 @@ public class AimSelect : MonoBehaviour
         if (newHovered != null)
         {
             newHovered.OnHoverEnter();
-        }
-
-        //Click
-        if (Mouse.current.leftButton.wasPressedThisFrame && worldUIHovered != null)
-        {
-            worldUIHovered.OnClick();
         }
     }
 
@@ -101,11 +131,7 @@ public class AimSelect : MonoBehaviour
             onHover?.Invoke(selectable);
         }
 
-        if (Mouse.current.leftButton.wasPressedThisFrame && currentHovered != null)
-        {
-            currentHovered.NPCSelect();
-            onSelect?.Invoke(currentHovered);
-        }
+
     }
 
     void DeselectNPC()

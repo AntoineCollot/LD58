@@ -237,7 +237,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d66184c9cf08ce14dbecabbfa35d9bbd, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  hoverSprite: {fileID: 21300000, guid: 8d6ef731aec4f454d8049bfcc4b7a981, type: 3}
+  hoverSprite: {fileID: 21300000, guid: b87c7b1c70dc2134294f8bcd127dc0cf, type: 3}
 --- !u!1001 &4747470703409471356
 PrefabInstance:
   m_ObjectHideFlags: 0

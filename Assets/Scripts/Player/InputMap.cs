@@ -109,6 +109,15 @@ public partial class @InputMap: IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""Click"",
+                    ""type"": ""Button"",
+                    ""id"": ""e1866198-9385-410e-b91e-6df15922d19a"",
+                    ""expectedControlType"": """",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
                 }
             ],
             ""bindings"": [
@@ -243,6 +252,28 @@ public partial class @InputMap: IInputActionCollection2, IDisposable
                     ""action"": ""Collection"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""cbeec971-923c-4e41-95a2-656245831cee"",
+                    ""path"": ""<Keyboard>/space"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Click"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""dd8d78e2-05ae-4337-8fa2-6084c98cca9a"",
+                    ""path"": ""<Mouse>/leftButton"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Click"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
                 }
             ]
         }
@@ -253,6 +284,7 @@ public partial class @InputMap: IInputActionCollection2, IDisposable
         m_Main = asset.FindActionMap("Main", throwIfNotFound: true);
         m_Main_Move = m_Main.FindAction("Move", throwIfNotFound: true);
         m_Main_Collection = m_Main.FindAction("Collection", throwIfNotFound: true);
+        m_Main_Click = m_Main.FindAction("Click", throwIfNotFound: true);
     }
 
     ~@InputMap()
@@ -335,6 +367,7 @@ public partial class @InputMap: IInputActionCollection2, IDisposable
     private List<IMainActions> m_MainActionsCallbackInterfaces = new List<IMainActions>();
     private readonly InputAction m_Main_Move;
     private readonly InputAction m_Main_Collection;
+    private readonly InputAction m_Main_Click;
     /// <summary>
     /// Provides access to input actions defined in input action map "Main".
     /// </summary>
@@ -354,6 +387,10 @@ public partial class @InputMap: IInputActionCollection2, IDisposable
         /// Provides access to the underlying input action "Main/Collection".
         /// </summary>
         public InputAction @Collection => m_Wrapper.m_Main_Collection;
+        /// <summary>
+        /// Provides access to the underlying input action "Main/Click".
+        /// </summary>
+        public InputAction @Click => m_Wrapper.m_Main_Click;
         /// <summary>
         /// Provides access to the underlying input action map instance.
         /// </summary>
@@ -386,6 +423,9 @@ public partial class @InputMap: IInputActionCollection2, IDisposable
             @Collection.started += instance.OnCollection;
             @Collection.performed += instance.OnCollection;
             @Collection.canceled += instance.OnCollection;
+            @Click.started += instance.OnClick;
+            @Click.performed += instance.OnClick;
+            @Click.canceled += instance.OnClick;
         }
 
         /// <summary>
@@ -403,6 +443,9 @@ public partial class @InputMap: IInputActionCollection2, IDisposable
             @Collection.started -= instance.OnCollection;
             @Collection.performed -= instance.OnCollection;
             @Collection.canceled -= instance.OnCollection;
+            @Click.started -= instance.OnClick;
+            @Click.performed -= instance.OnClick;
+            @Click.canceled -= instance.OnClick;
         }
 
         /// <summary>
@@ -457,5 +500,12 @@ public partial class @InputMap: IInputActionCollection2, IDisposable
         /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
         /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
         void OnCollection(InputAction.CallbackContext context);
+        /// <summary>
+        /// Method invoked when associated input action "Click" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
+        /// </summary>
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
+        void OnClick(InputAction.CallbackContext context);
     }
 }

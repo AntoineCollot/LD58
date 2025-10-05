@@ -4,7 +4,9 @@ using UnityEngine;
 public class CardCollectionSlot : MonoBehaviour
 {
     public ScriptableTGCCard cardToDisplay;
+    [Header("UI")]
     [SerializeField] TextMeshProUGUI countText;
+    [SerializeField] GameObject shadow;
     CardDisplay display;
 
     private void Start()
@@ -18,11 +20,13 @@ public class CardCollectionSlot : MonoBehaviour
         {
             countText.gameObject.SetActive(false);
             display.Hide();
+            shadow.SetActive(false);
             return;
         }
 
+        shadow.SetActive(true);
         countText.gameObject.SetActive(count > 1);
-        countText.text = count.ToString();
-        display.Display(cardToDisplay.CardData);
+        countText.text = "x" + count.ToString();
+        display.Display(cardToDisplay);
     }
 }

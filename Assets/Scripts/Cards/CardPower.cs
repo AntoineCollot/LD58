@@ -53,16 +53,12 @@ public abstract class CardPowerBase
     }
 
     //Attack
-    public virtual void PreAttack(CardBattle target) { }
-    public virtual void PostAttack(CardBattle target) { }
-
-    //Receive
-    public virtual void PreReceiveAttack(CardBattle from) { }
-    public virtual void PostReceiveAttack(CardBattle from) { }
+    public virtual void PreAction(BattleAction action) { }
+    public virtual void PostAction(BattleAction action) { }
 
     //Any
-    public virtual void PreAnyAttack(CardBattle from, CardBattle target) { }
-    public virtual void PostAnyAttack(CardBattle from, CardBattle target) { }
+    public virtual void PreAnyAction(BattleAction action) { }
+    public virtual void PostAnyAction(BattleAction action) { }
     public virtual void PostCardDie(CardBattle card) { }
 }
 
@@ -72,14 +68,15 @@ public class CardPowerDamageAroundOnAttack : CardPowerBase
     {
     }
 
-    public override void PostAttack(CardBattle target)
+    public override void PostAction(BattleAction action)
     {
+        if (action.type != BattleActionType.AttackDamage || action.source != owner)
+            return;
+
         CardDuelManager.Instance.GetAdjacentCards(owner, out CardBattle left, out CardBattle right);
         if (left != null)
-            left.Damage(1);
+            CardDuelManager.Instance.RegisterAction(owner, left, BattleActionType.PowerDamage, 1, true);
         if (right != null)
-            right.Damage(1);
-
-        CardDuelManager.Instance.UpdateDisplay();
+            CardDuelManager.Instance.RegisterAction(owner, right, BattleActionType.PowerDamage, 1);
     }
 }

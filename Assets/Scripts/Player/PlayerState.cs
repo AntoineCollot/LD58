@@ -10,13 +10,16 @@ using UnityEditor;
 public class PlayerState : MonoBehaviour
 {
     public static PlayerState Instance;
-    public CompositeState freezeInputState;
+    public CompositeState freezeMoveState;
+    public CompositeState freezeClickState;
 
-    public bool AreInputFrozen => freezeInputState.IsOn;
+    public bool CanMove => !freezeMoveState.IsOn;
+    public bool CanClick => !freezeClickState.IsOn;
 
     private void Awake()
     {
-        freezeInputState = new CompositeState();
+        freezeMoveState = new CompositeState();
+        freezeClickState = new CompositeState();
 
         Instance = this;
     }

@@ -5,7 +5,7 @@ public class CardCollectionDisplay : MonoBehaviour
     public static CardCollectionDisplay Instance;
     [SerializeField] GameObject panel;
     CardCollectionSlot[] slots;
-    bool IsVisible => panel.activeSelf;
+    public bool IsVisible => panel.activeSelf;
 
     InputMap inputMap;
 

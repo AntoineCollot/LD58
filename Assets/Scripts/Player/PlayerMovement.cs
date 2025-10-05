@@ -29,6 +29,9 @@ public class PlayerMovement : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        if (!PlayerState.Instance.CanMove)
+            return;
+
         Vector2 inputs = inputMap.Main.Move.ReadValue<Vector2>();
         inputs.Normalize();
 
@@ -49,6 +52,9 @@ public class PlayerMovement : MonoBehaviour
 
     private void FixedUpdate()
     {
+        if (!PlayerState.Instance.CanMove)
+            return;
+
         body.AddForce(moveForce, ForceMode.Acceleration);
     }
 }

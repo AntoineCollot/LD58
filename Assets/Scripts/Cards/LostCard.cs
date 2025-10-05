@@ -8,7 +8,7 @@ public class LostCard : MonoBehaviour
     void Start()
     {
         pickUpButton.onClick += OnPickUpButton;
-        GetComponentInChildren<CardDisplay>(true).Display(card.CardData);
+        GetComponentInChildren<CardDisplay>(true).Display(card);
     }
 
     void OnDestroy()
