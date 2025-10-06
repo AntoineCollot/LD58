@@ -18,7 +18,6 @@ public class LookPlayerDirection : MonoBehaviour
         camVector.y = 0;
         targetAngle = Vector3.SignedAngle(Vector3.forward,camVector.normalized, Vector3.up);
         angle = Mathf.SmoothDampAngle(angle, targetAngle, ref refAngle, 0.1f);
-        Debug.Log("Angle: " + angle + "|" + targetAngle);
 
         transform.rotation = Quaternion.Euler(0, angle, 0);
     }

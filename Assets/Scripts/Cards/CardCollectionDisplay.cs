@@ -1,5 +1,7 @@
 using UnityEngine;
 
+//After slots
+[DefaultExecutionOrder(10)]
 public class CardCollectionDisplay : MonoBehaviour
 {
     public static CardCollectionDisplay Instance;

@@ -23,6 +23,9 @@ public class RandomLostCardSpawner : MonoBehaviour
 
     IEnumerator SpawnLostCards()
     {
+        while(!GameManager.Instance.gameHasStarted)
+            yield return null;
+
         while (true)
         {
             yield return new WaitForSeconds(intervalTime);
@@ -39,7 +42,8 @@ public class RandomLostCardSpawner : MonoBehaviour
     public void SpawnCard()
     {
         Transform pos = GetSpawnPosOutOfPlayerView();
-        Instantiate(lostCardPrefab, pos.position, pos.rotation, transform);
+        LostCard card = Instantiate(lostCardPrefab, pos.position, pos.rotation, transform);
+        card.SetCard(cards[Random.Range(0, cards.Length)]);
     }
 
     Transform GetSpawnPosOutOfPlayerView()

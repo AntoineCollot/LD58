@@ -13,7 +13,7 @@ public class PlayerState : MonoBehaviour
     public CompositeState freezeMoveState;
     public CompositeState freezeClickState;
 
-    public bool CanMove => !freezeMoveState.IsOn;
+    public bool CanMove => !freezeMoveState.IsOn && GameManager.Instance.gameHasStarted;
     public bool CanClick => !freezeClickState.IsOn;
 
     private void Awake()

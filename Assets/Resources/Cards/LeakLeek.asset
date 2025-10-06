@@ -14,6 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   cardName: Leak Leek
   artwork: {fileID: -1485828185, guid: 960cd433a789ba149bdd61f92eb3e274, type: 3}
+  isRare: 0
   power: 2
   strength: 3
   hp: 1

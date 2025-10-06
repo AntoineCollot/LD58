@@ -5,11 +5,12 @@ public class LostCard : MonoBehaviour
     [SerializeField] ScriptableTGCCard card;
     [SerializeField] WorldUIButton pickUpButton;
     public bool hasBeenPickedUp { get; private set; }
+    CardDisplay display;
 
     void Start()
     {
         pickUpButton.onClick += OnPickUpButton;
-        CardDisplay display = GetComponentInChildren<CardDisplay>(true);
+        display = GetComponentInChildren<CardDisplay>(true);
         if(display!=null)
             display.Display(card);
     }
@@ -20,6 +21,10 @@ public class LostCard : MonoBehaviour
             pickUpButton.onClick -= OnPickUpButton;
     }
 
+    public void SetCard(ScriptableTGCCard newCard)
+    {
+        card = newCard;
+    }
 
     private void OnPickUpButton()
     {

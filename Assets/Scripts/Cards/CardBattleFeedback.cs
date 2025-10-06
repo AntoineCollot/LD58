@@ -39,8 +39,10 @@ public class CardBattleFeedback : MonoBehaviour
         originalPos = rectT.anchoredPosition;
 
         CardDuelManager.Instance.onActionPlayed += OnActionPlayed;
-            CardDuelManager.Instance.onCardDied += OnCardDied;
-            CardDuelManager.Instance.onDuelStart += OnDuelStart;
+        CardDuelManager.Instance.onCardDied += OnCardDied;
+        CardDuelManager.Instance.onDuelStart += OnDuelStart;
+
+        ResetForNewFight();
     }
 
     private void OnDestroy()
@@ -78,9 +80,9 @@ public class CardBattleFeedback : MonoBehaviour
         const float TURN_AROUND_TIME = 0.4f;
         float t = 0;
         cardBack.SetActive(false);
-        while (t<1)
+        while (t < 1)
         {
-            t += Time.deltaTime/ TURN_AROUND_TIME;
+            t += Time.deltaTime / TURN_AROUND_TIME;
 
             transform.localRotation = Quaternion.Euler(0, Curves.QuadEaseIn(0, 180, Mathf.Clamp01(t)), 0);
 
@@ -114,7 +116,7 @@ public class CardBattleFeedback : MonoBehaviour
                 break;
             case BattleActionType.PowerDamage:
                 //powerParticles.Play();
-               powerParticles.gameObject.SetActive(true);
+                powerParticles.gameObject.SetActive(true);
                 break;
         }
         attackAmount01 = 1;

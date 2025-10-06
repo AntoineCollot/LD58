@@ -37,7 +37,7 @@ public static class CardPowerDatabase
                 desc = "[When Attacked:] Return damages";
                 break;
             case CardPower.HealNearbyCardsThatAttacks:
-                desc = "Heal nearby cards that attacks";
+                desc = "Heal nearby cards that attacks (max 3 times)";
                 break;
             case CardPower.DamageRandomEnemyOnAttack:
                 desc = "[After Attack:] Damage a random enemy";
@@ -188,6 +188,8 @@ public class PowerReturnAttack : CardPowerBase
 
 public class PowerHealNearbyAttack : CardPowerBase
 {
+    int used = 0;
+
     public PowerHealNearbyAttack(CardBattle owner) : base(owner)
     {
     }
@@ -201,6 +203,10 @@ public class PowerHealNearbyAttack : CardPowerBase
         if (owner.isDead)
             return;
 
+        if (used >= 3)
+            return;
+
+        used++;
         CardDuelManager.Instance.GetAdjacentCards(owner, out CardBattle left, out CardBattle right);
 
         if(left == action.source && left!=null)

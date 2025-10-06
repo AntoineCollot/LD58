@@ -9,7 +9,7 @@ public class CardCollectionSlot : MonoBehaviour
     [SerializeField] GameObject shadow;
     CardDisplay display;
 
-    private void Start()
+    private void Awake()
     {
         display = GetComponentInChildren<CardDisplay>(true);
     }

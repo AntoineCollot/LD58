@@ -92,7 +92,7 @@ public class CardDuelManager : MonoBehaviour
         freezePlayerToken.SetOn(true);
 
         int turns = 0;
-        const int MAX_TURNS = 30;
+        const int MAX_TURNS = 15;
         bool victory = false;
 
         leftTeam = player;
@@ -124,6 +124,8 @@ public class CardDuelManager : MonoBehaviour
 
             //player turn
             yield return StartCoroutine(PlayTurn(player, opponent));
+
+            turns++;
         }
         Debug.Log("Duel finished! Victory: " + victory);
         yield return new WaitForSeconds(1);

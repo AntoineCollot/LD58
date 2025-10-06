@@ -102,6 +102,15 @@ public partial class @InputMap: IInputActionCollection2, IDisposable
                     ""initialStateCheck"": true
                 },
                 {
+                    ""name"": ""Look"",
+                    ""type"": ""Value"",
+                    ""id"": ""d2269e5a-7fd6-4212-a2e3-227904c4ec72"",
+                    ""expectedControlType"": ""Vector2"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": true
+                },
+                {
                     ""name"": ""Collection"",
                     ""type"": ""Button"",
                     ""id"": ""139bc709-b3f1-4c0c-8e6c-072000fbd22c"",
@@ -114,6 +123,15 @@ public partial class @InputMap: IInputActionCollection2, IDisposable
                     ""name"": ""Click"",
                     ""type"": ""Button"",
                     ""id"": ""e1866198-9385-410e-b91e-6df15922d19a"",
+                    ""expectedControlType"": """",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""MuteMusic"",
+                    ""type"": ""Button"",
+                    ""id"": ""a77b8483-2bbb-4a17-bebb-e48084673d24"",
                     ""expectedControlType"": """",
                     ""processors"": """",
                     ""interactions"": """",
@@ -233,6 +251,17 @@ public partial class @InputMap: IInputActionCollection2, IDisposable
                 },
                 {
                     ""name"": """",
+                    ""id"": ""65ad17dd-6de7-4967-a49e-e66acee65366"",
+                    ""path"": ""<Pointer>/delta"",
+                    ""interactions"": """",
+                    ""processors"": ""DeltaTimeScale,ScaleVector2(x=0.1,y=0.1)"",
+                    ""groups"": "";Keyboard&Mouse"",
+                    ""action"": ""Look"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
                     ""id"": ""433853db-d3dd-4f35-90c7-72b91889f412"",
                     ""path"": ""<Mouse>/rightButton"",
                     ""interactions"": """",
@@ -274,6 +303,28 @@ public partial class @InputMap: IInputActionCollection2, IDisposable
                     ""action"": ""Click"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""2d2afee0-2f47-45a9-a525-8cbfec1d3a6c"",
+                    ""path"": ""<Keyboard>/m"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""MuteMusic"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""b7512fe3-b212-4c41-ae54-98aafd2035ef"",
+                    ""path"": ""<Keyboard>/semicolon"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""MuteMusic"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
                 }
             ]
         }
@@ -283,8 +334,10 @@ public partial class @InputMap: IInputActionCollection2, IDisposable
         // Main
         m_Main = asset.FindActionMap("Main", throwIfNotFound: true);
         m_Main_Move = m_Main.FindAction("Move", throwIfNotFound: true);
+        m_Main_Look = m_Main.FindAction("Look", throwIfNotFound: true);
         m_Main_Collection = m_Main.FindAction("Collection", throwIfNotFound: true);
         m_Main_Click = m_Main.FindAction("Click", throwIfNotFound: true);
+        m_Main_MuteMusic = m_Main.FindAction("MuteMusic", throwIfNotFound: true);
     }
 
     ~@InputMap()
@@ -366,8 +419,10 @@ public partial class @InputMap: IInputActionCollection2, IDisposable
     private readonly InputActionMap m_Main;
     private List<IMainActions> m_MainActionsCallbackInterfaces = new List<IMainActions>();
     private readonly InputAction m_Main_Move;
+    private readonly InputAction m_Main_Look;
     private readonly InputAction m_Main_Collection;
     private readonly InputAction m_Main_Click;
+    private readonly InputAction m_Main_MuteMusic;
     /// <summary>
     /// Provides access to input actions defined in input action map "Main".
     /// </summary>
@@ -384,6 +439,10 @@ public partial class @InputMap: IInputActionCollection2, IDisposable
         /// </summary>
         public InputAction @Move => m_Wrapper.m_Main_Move;
         /// <summary>
+        /// Provides access to the underlying input action "Main/Look".
+        /// </summary>
+        public InputAction @Look => m_Wrapper.m_Main_Look;
+        /// <summary>
         /// Provides access to the underlying input action "Main/Collection".
         /// </summary>
         public InputAction @Collection => m_Wrapper.m_Main_Collection;
@@ -391,6 +450,10 @@ public partial class @InputMap: IInputActionCollection2, IDisposable
         /// Provides access to the underlying input action "Main/Click".
         /// </summary>
         public InputAction @Click => m_Wrapper.m_Main_Click;
+        /// <summary>
+        /// Provides access to the underlying input action "Main/MuteMusic".
+        /// </summary>
+        public InputAction @MuteMusic => m_Wrapper.m_Main_MuteMusic;
         /// <summary>
         /// Provides access to the underlying input action map instance.
         /// </summary>
@@ -420,12 +483,18 @@ public partial class @InputMap: IInputActionCollection2, IDisposable
             @Move.started += instance.OnMove;
             @Move.performed += instance.OnMove;
             @Move.canceled += instance.OnMove;
+            @Look.started += instance.OnLook;
+            @Look.performed += instance.OnLook;
+            @Look.canceled += instance.OnLook;
             @Collection.started += instance.OnCollection;
             @Collection.performed += instance.OnCollection;
             @Collection.canceled += instance.OnCollection;
             @Click.started += instance.OnClick;
             @Click.performed += instance.OnClick;
             @Click.canceled += instance.OnClick;
+            @MuteMusic.started += instance.OnMuteMusic;
+            @MuteMusic.performed += instance.OnMuteMusic;
+            @MuteMusic.canceled += instance.OnMuteMusic;
         }
 
         /// <summary>
@@ -440,12 +509,18 @@ public partial class @InputMap: IInputActionCollection2, IDisposable
             @Move.started -= instance.OnMove;
             @Move.performed -= instance.OnMove;
             @Move.canceled -= instance.OnMove;
+            @Look.started -= instance.OnLook;
+            @Look.performed -= instance.OnLook;
+            @Look.canceled -= instance.OnLook;
             @Collection.started -= instance.OnCollection;
             @Collection.performed -= instance.OnCollection;
             @Collection.canceled -= instance.OnCollection;
             @Click.started -= instance.OnClick;
             @Click.performed -= instance.OnClick;
             @Click.canceled -= instance.OnClick;
+            @MuteMusic.started -= instance.OnMuteMusic;
+            @MuteMusic.performed -= instance.OnMuteMusic;
+            @MuteMusic.canceled -= instance.OnMuteMusic;
         }
 
         /// <summary>
@@ -494,6 +569,13 @@ public partial class @InputMap: IInputActionCollection2, IDisposable
         /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
         void OnMove(InputAction.CallbackContext context);
         /// <summary>
+        /// Method invoked when associated input action "Look" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
+        /// </summary>
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
+        void OnLook(InputAction.CallbackContext context);
+        /// <summary>
         /// Method invoked when associated input action "Collection" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
         /// </summary>
         /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
@@ -507,5 +589,12 @@ public partial class @InputMap: IInputActionCollection2, IDisposable
         /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
         /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
         void OnClick(InputAction.CallbackContext context);
+        /// <summary>
+        /// Method invoked when associated input action "MuteMusic" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
+        /// </summary>
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
+        void OnMuteMusic(InputAction.CallbackContext context);
     }
 }

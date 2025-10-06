@@ -112,6 +112,8 @@ public class TeamSelection : MonoBehaviour
         if (duelist != null)
             duelist.ClearCards();
 
+        UpdateDisplay();
+
         CardDisplay.onAnyCardClick -= OnAnyCardClick;
         CardDisplay.onAnyCardClick += OnAnyCardClick;
         selectedCards = new();
@@ -125,7 +127,7 @@ public class TeamSelection : MonoBehaviour
         EnableShowObjects(false);
 
         selectedCards = null;
-        if (!doNotResetCardInteractivity)
+        if (!doNotResetCardInteractivity && Time.time>1)
             CardCollectionDisplay.Instance.SetCardsInteractive(false);
         isInTeamSelection = false;
         CardDisplay.onAnyCardClick -= OnAnyCardClick;
